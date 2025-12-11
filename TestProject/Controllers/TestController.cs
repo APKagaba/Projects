@@ -112,7 +112,6 @@ namespace TestProject.Controllers
             {
                 var directoryInfo = new DirectoryInfo(basePath);
 
-                // Search directories
                 foreach (var dir in directoryInfo.GetDirectories())
                 {
                     if (dir.Name.ToLower().Contains(query))
@@ -126,11 +125,9 @@ namespace TestProject.Controllers
                         });
                     }
 
-                    // Recurse into subdirectories
                     results.AddRange(SearchRecursive(dir.FullName, query));
                 }
 
-                // Search files
                 foreach (var file in directoryInfo.GetFiles())
                 {
                     if (file.Name.ToLower().Contains(query))
@@ -172,7 +169,6 @@ namespace TestProject.Controllers
                 return basePath;
             }
 
-            // Normalize forward slashes to the platform-specific separator
             relativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
             return Path.Combine(basePath, relativePath);
         }
@@ -210,24 +206,19 @@ namespace TestProject.Controllers
                     {
                         if (file.Length > 0)
                         {
-                            // Use the original file name from the upload
-                            // For folder uploads, the filename includes the relative path
                             string filename = file.FileName;
 
                             filename = filename.Replace('/', Path.DirectorySeparatorChar);
 
-                            // Build the full file path
                             string filePath = Path.Combine(uploadPath, filename);
                             filePath = Path.GetFullPath(filePath);
 
-                            // Security check: ensure file is within upload directory
                             if (!filePath.StartsWith(uploadPath))
                             {
                                 failedUploads.Add($"{Path.GetFileName(filename)} (path traversal detected)");
                                 continue;
                             }
 
-                            // Create directory structure if it doesn't exist
                             string? fileDirectory = Path.GetDirectoryName(filePath);
                             if (!string.IsNullOrEmpty(fileDirectory) && !Directory.Exists(fileDirectory))
                             {

@@ -427,7 +427,6 @@
             <div class="stats" id="stats"></div>
         </div>
 
-        <!-- Search Info Panel -->
         <div class="search-info" id="searchInfo">
             <div class="search-info-content">
                 <div class="search-info-left">
@@ -449,7 +448,6 @@
         <ul class="content-list" id="contentList"></ul>
     </div>
 
-    <!-- JSON Modal -->
     <div class="json-modal" id="jsonModal">
         <div class="json-modal-content">
             <div class="json-modal-header">
@@ -584,7 +582,6 @@
 
                     const data = await response.json();
 
-                    // Store the full response for JSON viewer
                     this.lastSearchResponse = data;
 
                     const searchItems = [
@@ -639,7 +636,6 @@
                 const files = event.target.files;
                 if (files.length === 0) return;
 
-                // Close the menu after selection
                 document.getElementById('uploadMenu').classList.remove('show');
 
                 try {
@@ -649,7 +645,6 @@
 
                     const formData = new FormData();
 
-                    // Use the original filename which includes relative path for folder uploads
                     for (let file of files) {
                         formData.append('files', file, file.webkitRelativePath || file.name);
                     }
