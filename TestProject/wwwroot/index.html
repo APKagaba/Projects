@@ -1,0 +1,880 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>File & Directory Browsing</title>
+
+</head>
+<body>
+    <div class="container">
+        <h1>📁 File & Directory Browser</h1>
+
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: #f5f5f5;
+                padding: 20px
+            }
+
+            .container {
+                max-width: 1000px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                padding: 24px;
+            }
+
+            h1 {
+                margin-bottom: 24px;
+                color: #333;
+                font-size: 28px;
+            }
+
+            .controls {
+                margin-bottom: 24px;
+            }
+
+            .header {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 16px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+
+            .header button {
+                padding: 8px 12px;
+                background: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background 0.2s;
+            }
+
+            .header button:hover {
+                background: #0056b3;
+            }
+
+            .header span {
+                color: #666;
+                margin: 0 4px;
+            }
+
+            .search-box {
+                margin-bottom: 16px;
+            }
+
+            .search-box input {
+                width: 100%;
+                padding: 10px 12px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+                transition: border-color 0.2s;
+            }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: #007bff;
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 16px;
+                flex-wrap: wrap;
+                position: relative;
+            }
+
+            .action-buttons button, .action-buttons label {
+                padding: 10px 16px;
+                background: #28a745;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background 0.2s;
+            }
+
+            .action-buttons button:hover, .action-buttons label:hover {
+                background: #218838;
+            }
+
+            .action-buttons label {
+                margin: 0;
+                display: inline-block;
+            }
+
+            .action-buttons input[type="file"] {
+                display: none;
+            }
+
+            .upload-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                min-width: 200px;
+                display: none;
+                z-index: 1000;
+                margin-top: 4px;
+            }
+
+            .upload-menu.show {
+                display: block;
+            }
+
+            .upload-menu label {
+                display: block;
+                padding: 12px 16px;
+                background: white;
+                color: #333;
+                border: none;
+                border-radius: 0;
+                cursor: pointer;
+                margin: 0;
+                transition: background 0.2s;
+            }
+
+            .upload-menu label:hover {
+                background: #f0f7ff;
+            }
+
+            .upload-menu label:first-child {
+                border-radius: 4px 4px 0 0;
+            }
+
+            .upload-menu label:last-child {
+                border-radius: 0 0 4px 4px;
+            }
+
+            .stats {
+                background: #f0f7ff;
+                border: 1px solid #bee5eb;
+                border-radius: 4px;
+                padding: 12px 16px;
+                margin-bottom: 16px;
+                font-size: 14px;
+                color: #333;
+            }
+
+            .stats-content {
+                display: flex;
+                gap: 24px;
+                flex-wrap: wrap;
+            }
+
+            .stat-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .stat-label {
+                color: #666;
+                font-weight: 500;
+            }
+
+            .stat-value {
+                color: #007bff;
+                font-weight: 600;
+            }
+
+            .search-info {
+                background: #e7f3ff;
+                border: 1px solid #b3d9ff;
+                border-radius: 4px;
+                padding: 12px 16px;
+                margin-bottom: 16px;
+                font-size: 13px;
+                color: #004085;
+                display: none;
+            }
+
+            .search-info.show {
+                display: block;
+            }
+
+            .search-info-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .search-info-left {
+                display: flex;
+                gap: 16px;
+                flex-wrap: wrap;
+            }
+
+            .search-info-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .view-json-btn {
+                padding: 6px 12px;
+                background: #6c757d;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                transition: background 0.2s;
+            }
+
+            .view-json-btn:hover {
+                background: #5a6268;
+            }
+
+            .error {
+                background: #f8d7da;
+                color: #721c24;
+                padding: 12px 16px;
+                border-radius: 4px;
+                margin-bottom: 16px;
+                border: 1px solid #f5c6cb;
+                display: none;
+            }
+
+            .success {
+                background: #d4edda;
+                color: #155724;
+                padding: 12px 16px;
+                border-radius: 4px;
+                margin-bottom: 16px;
+                border: 1px solid #c3e6cb;
+                display: none;
+            }
+
+            .loading {
+                text-align: center;
+                padding: 20px;
+                color: #666;
+                display: none;
+            }
+
+            .content-list {
+                list-style: none;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+
+            .content-item {
+                padding: 12px 16px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: background 0.2s;
+            }
+
+            .content-item:last-child {
+                border-bottom: none;
+            }
+
+            .content-item.directory {
+                cursor: pointer;
+            }
+
+            .content-item.directory:hover {
+                background: #f0f7ff;
+            }
+
+            .content-item.file {
+                background: #fafafa;
+            }
+
+            .icon {
+                font-size: 16px;
+                width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .item-info {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .item-name {
+                font-weight: 500;
+                color: #333;
+                word-break: break-word;
+            }
+
+            .item-size {
+                font-size: 12px;
+                color: #999;
+            }
+
+            .item-actions {
+                display: flex;
+                gap: 8px;
+                flex-shrink: 0;
+            }
+
+            .item-actions button {
+                padding: 6px 10px;
+                background: #dc3545;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                transition: background 0.2s;
+            }
+
+            .item-actions button:hover {
+                background: #c82333;
+            }
+
+            .item-actions .download-btn {
+                background: #17a2b8;
+            }
+
+            .item-actions .download-btn:hover {
+                background: #138496;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 40px 20px;
+                color: #999;
+            }
+
+            .json-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 2000;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .json-modal.show {
+                display: flex;
+            }
+
+            .json-modal-content {
+                background: white;
+            }
+
+            .json-modal-header {
+                padding: 16px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .json-modal-header h3 {
+                margin: 0;
+                font-size: 16px;
+            }
+
+            .json-modal-close {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                color: #666;
+                padding: 0;
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        </style>
+
+        <div class="controls">
+            <div class="header" id="header"></div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search files and folders...">
+            </div>
+            <div class="action-buttons">
+                <button id="uploadBtn">📤 Upload</button>
+                <div class="upload-menu" id="uploadMenu">
+                    <label for="uploadFilesInput">📤 Files</label>
+                    <input type="file" id="uploadFilesInput" multiple>
+                    <label for="uploadFolderInput">📁 Folder</label>
+                    <input type="file" id="uploadFolderInput" webkitdirectory directory mozdirectory>
+                </div>
+            </div>
+            <div class="stats" id="stats"></div>
+        </div>
+
+        <!-- Search Info Panel -->
+        <div class="search-info" id="searchInfo">
+            <div class="search-info-content">
+                <div class="search-info-left">
+                    <div class="search-info-item">
+                        <strong>Search:</strong> <span id="searchQueryDisplay"></span>
+                    </div>
+                    <div class="search-info-item">
+                        <strong>Total Results:</strong> <span id="searchTotalDisplay">0</span>
+                    </div>
+                </div>
+                <button class="view-json-btn" id="viewJsonBtn">📋 View API Response</button>
+            </div>
+        </div>
+
+        <div id="error" class="error"></div>
+        <div id="success" class="success"></div>
+        <div id="loading" class="loading">Loading...</div>
+        <div id="emptyState" class="empty-state" style="display: none;">No items found</div>
+        <ul class="content-list" id="contentList"></ul>
+    </div>
+
+    <!-- JSON Modal -->
+    <div class="json-modal" id="jsonModal">
+        <div class="json-modal-content">
+            <div class="json-modal-header">
+                <h3>API Response (JSON)</h3>
+                <button class="json-modal-close" id="jsonModalClose">&times;</button>
+            </div>
+            <div>
+                <pre id="jsonContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FileBrowser {
+            constructor() {
+                this.currentPath = '';
+                this.allItems = [];
+                this.searchQuery = '';
+                this.lastSearchResponse = null;
+                this.init();
+            }
+
+            init() {
+                this.loadPathFromUrl();
+                window.addEventListener('popstate', () => this.loadPathFromUrl());
+                document.getElementById('searchInput').addEventListener('input', (e) => this.onSearch(e));
+                document.getElementById('uploadBtn').addEventListener('click', (e) => this.toggleUploadMenu(e));
+                document.getElementById('uploadFilesInput').addEventListener('change', (e) => this.onUpload(e));
+                document.getElementById('uploadFolderInput').addEventListener('change', (e) => this.onUpload(e));
+                document.addEventListener('click', (e) => this.closeUploadMenuIfClickedOutside(e));
+                document.getElementById('viewJsonBtn').addEventListener('click', () => this.openJsonModal());
+                document.getElementById('jsonModalClose').addEventListener('click', () => this.closeJsonModal());
+                document.getElementById('jsonModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'jsonModal') this.closeJsonModal();
+                });
+            }
+
+            toggleUploadMenu(event) {
+                event.stopPropagation();
+                const menu = document.getElementById('uploadMenu');
+                menu.classList.toggle('show');
+            }
+
+            closeUploadMenuIfClickedOutside(event) {
+                const menu = document.getElementById('uploadMenu');
+                const btn = document.getElementById('uploadBtn');
+                if (!menu.contains(event.target) && !btn.contains(event.target)) {
+                    menu.classList.remove('show');
+                }
+            }
+
+            loadPathFromUrl() {
+                const hash = window.location.hash.slice(1);
+                this.currentPath = hash;
+                this.searchQuery = '';
+                document.getElementById('searchInput').value = '';
+                this.loadDirectory(this.currentPath);
+            }
+
+            updateUrl(path) {
+                window.location.hash = path;
+            }
+
+            async loadDirectory(path) {
+                try {
+                    this.showLoading(true);
+                    this.showError('');
+                    this.showSuccess('');
+                    this.hideSearchInfo();
+
+                    const response = await fetch(`/api/test/browse?path=${encodeURIComponent(path)}`);
+
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            throw new Error('Directory not found');
+                        } else if (response.status === 400) {
+                            throw new Error('Invalid path');
+                        } else {
+                            throw new Error('Failed to load directory');
+                        }
+                    }
+
+                    const data = await response.json();
+                    this.currentPath = path;
+                    this.allItems = [
+                        ...data.directories.map(d => ({
+                            ...d,
+                            fullPath: path ? `${path}/${d.name}` : d.name
+                        })),
+                        ...data.files.map(f => ({
+                            ...f,
+                            fullPath: path ? `${path}/${f.name}` : f.name
+                        }))
+                    ];
+
+                    this.updateUrl(path);
+                    this.renderHeader();
+                    this.renderStats(this.allItems);
+                    this.renderContentList(this.allItems);
+                } catch (error) {
+                    this.showError(error.message);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async onSearch(event) {
+                this.searchQuery = event.target.value.toLowerCase();
+
+                if (!this.searchQuery) {
+                    this.renderStats(this.allItems);
+                    this.renderContentList(this.allItems);
+                    this.hideSearchInfo();
+                    return;
+                }
+
+                try {
+                    this.showLoading(true);
+                    this.showError('');
+
+                    const response = await fetch(
+                        `/api/test/search?query=${encodeURIComponent(this.searchQuery)}&path=${encodeURIComponent(this.currentPath)}`
+                    );
+
+                    if (!response.ok) {
+                        if (response.status === 400) {
+                            throw new Error('Invalid search query');
+                        } else {
+                            throw new Error('Search failed');
+                        }
+                    }
+
+                    const data = await response.json();
+
+                    // Store the full response for JSON viewer
+                    this.lastSearchResponse = data;
+
+                    const searchItems = [
+                        ...data.directories.map(d => ({
+                            ...d,
+                            fullPath: d.fullPath
+                        })),
+                        ...data.files.map(f => ({
+                            ...f,
+                            fullPath: f.fullPath
+                        }))
+                    ];
+
+                    this.renderStats(searchItems);
+                    this.renderContentList(searchItems);
+                    this.showSearchInfo(data);
+                } catch (error) {
+                    this.showError(error.message);
+                    this.hideSearchInfo();
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            showSearchInfo(data) {
+                const searchInfo = document.getElementById('searchInfo');
+                document.getElementById('searchQueryDisplay').textContent = `"${data.query}"`;
+                document.getElementById('searchTotalDisplay').textContent = data.totalResults;
+                searchInfo.classList.add('show');
+            }
+
+            hideSearchInfo() {
+                const searchInfo = document.getElementById('searchInfo');
+                searchInfo.classList.remove('show');
+                this.lastSearchResponse = null;
+            }
+
+            openJsonModal() {
+                if (!this.lastSearchResponse) return;
+                const jsonModal = document.getElementById('jsonModal');
+                const jsonContent = document.getElementById('jsonContent');
+                jsonContent.textContent = JSON.stringify(this.lastSearchResponse, null, 2);
+                jsonModal.classList.add('show');
+            }
+
+            closeJsonModal() {
+                const jsonModal = document.getElementById('jsonModal');
+                jsonModal.classList.remove('show');
+            }
+
+            async onUpload(event) {
+                const files = event.target.files;
+                if (files.length === 0) return;
+
+                // Close the menu after selection
+                document.getElementById('uploadMenu').classList.remove('show');
+
+                try {
+                    this.showLoading(true);
+                    this.showError('');
+                    this.showSuccess('');
+
+                    const formData = new FormData();
+
+                    // Use the original filename which includes relative path for folder uploads
+                    for (let file of files) {
+                        formData.append('files', file, file.webkitRelativePath || file.name);
+                    }
+
+                    const response = await fetch(
+                        `/api/test/upload?path=${encodeURIComponent(this.currentPath)}`,
+                        {
+                            method: 'POST',
+                            body: formData
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Upload failed');
+                    }
+
+                    const result = await response.json();
+                    this.showSuccess(result.message || `${result.uploadedCount} item(s) uploaded successfully`);
+
+                    document.getElementById('uploadFilesInput').value = '';
+                    document.getElementById('uploadFolderInput').value = '';
+
+                    await this.loadDirectory(this.currentPath);
+                } catch (error) {
+                    this.showError(error.message);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async onDownload(filePath) {
+                try {
+                    window.location.href = `/api/test/download?path=${encodeURIComponent(filePath)}`;
+                } catch (error) {
+                    this.showError('Download failed');
+                }
+            }
+
+            async onDelete(itemPath, isDirectory) {
+                if (!confirm(`Delete ${isDirectory ? 'directory' : 'file'}?`)) {
+                    return;
+                }
+
+                try {
+                    this.showLoading(true);
+                    this.showError('');
+                    this.showSuccess('');
+
+                    const response = await fetch(
+                        `/api/test/delete?path=${encodeURIComponent(itemPath)}&isDirectory=${isDirectory}`,
+                        { method: 'DELETE' }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Delete failed');
+                    }
+
+                    this.showSuccess('Item deleted successfully');
+                    await this.loadDirectory(this.currentPath);
+                } catch (error) {
+                    this.showError(error.message);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            renderHeader() {
+                const header = document.getElementById('header');
+                header.innerHTML = '';
+
+                const rootBtn = document.createElement('button');
+                rootBtn.textContent = '📂 Root';
+                rootBtn.addEventListener('click', () => this.loadDirectory(''));
+                header.appendChild(rootBtn);
+
+                if (this.currentPath) {
+                    const parts = this.currentPath.split('/');
+                    let accPath = '';
+
+                    parts.forEach((part) => {
+                        const span = document.createElement('span');
+                        span.textContent = '/';
+                        header.appendChild(span);
+
+                        accPath = accPath ? `${accPath}/${part}` : part;
+                        const pathAtIndex = accPath;
+
+                        const btn = document.createElement('button');
+                        btn.textContent = part;
+                        btn.addEventListener('click', () => this.loadDirectory(pathAtIndex));
+                        header.appendChild(btn);
+                    });
+                }
+            }
+
+            renderStats(items) {
+                const stats = document.getElementById('stats');
+                const directories = items.filter(i => i.type === 'directory');
+                const files = items.filter(i => i.type === 'file');
+                const totalSize = files.reduce((sum, f) => sum + (f.size || 0), 0);
+
+                stats.innerHTML = `
+                                <div class="stats-content">
+                                    <div class="stat-item">
+                                        <span class="stat-label">📁 Folders:</span>
+                                        <span class="stat-value">${directories.length}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">📄 Files:</span>
+                                        <span class="stat-value">${files.length}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">💾 Total Size:</span>
+                                        <span class="stat-value">${this.formatFileSize(totalSize)}</span>
+                                    </div>
+                                </div>
+                            `;
+            }
+
+            renderContentList(items) {
+                const list = document.getElementById('contentList');
+                const emptyState = document.getElementById('emptyState');
+
+                if (items.length === 0) {
+                    list.innerHTML = '';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                emptyState.style.display = 'none';
+                list.innerHTML = '';
+
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = `content-item ${item.type}`;
+
+                    const icon = document.createElement('span');
+                    icon.className = 'icon';
+                    icon.textContent = item.type === 'directory' ? '📁' : '📄';
+
+                    const info = document.createElement('div');
+                    info.className = 'item-info';
+
+                    const name = document.createElement('div');
+                    name.className = 'item-name';
+                    name.textContent = item.name;
+
+                    info.appendChild(name);
+
+                    if (item.type === 'file' && item.size) {
+                        const size = document.createElement('div');
+                        size.className = 'item-size';
+                        size.textContent = this.formatFileSize(item.size);
+                        info.appendChild(size);
+                    }
+
+                    li.appendChild(icon);
+                    li.appendChild(info);
+
+                    const actions = document.createElement('div');
+                    actions.className = 'item-actions';
+
+                    if (item.type === 'file') {
+                        const downloadBtn = document.createElement('button');
+                        downloadBtn.className = 'download-btn';
+                        downloadBtn.textContent = '⬇️ Download';
+                        downloadBtn.addEventListener('click', () => this.onDownload(item.fullPath));
+                        actions.appendChild(downloadBtn);
+                    }
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = '🗑️ Delete';
+                    deleteBtn.addEventListener('click', () => this.onDelete(item.fullPath, item.type === 'directory'));
+                    actions.appendChild(deleteBtn);
+
+                    li.appendChild(actions);
+
+                    if (item.type === 'directory') {
+                        li.addEventListener('click', (e) => {
+                            if (e.target.closest('.item-actions')) return;
+                            this.loadDirectory(item.fullPath);
+                        });
+                    }
+
+                    list.appendChild(li);
+                });
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return (Math.round(bytes / Math.pow(k, i) * 100) / 100) + ' ' + sizes[i];
+            }
+
+            showLoading(show) {
+                document.getElementById('loading').style.display = show ? 'block' : 'none';
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('error');
+                if (message) {
+                    errorDiv.textContent = message;
+                    errorDiv.style.display = 'block';
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+            }
+
+            showSuccess(message) {
+                const successDiv = document.getElementById('success');
+                if (message) {
+                    successDiv.textContent = message;
+                    successDiv.style.display = 'block';
+                    setTimeout(() => successDiv.style.display = 'none', 3000);
+                } else {
+                    successDiv.style.display = 'none';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new FileBrowser();
+        });
+    </script>
+</body>
+</html>
